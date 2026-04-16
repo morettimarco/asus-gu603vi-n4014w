@@ -11,15 +11,19 @@
 
     nixos-hardware.url = "github:NixOS/nixos-hardware";
 
-    # Do NOT override nixpkgs — patches must match upstream's kernel version
-    nix-cachyos-kernel.url = "github:xddxdd/nix-cachyos-kernel";
+    # Use release branch for binary cache availability
+    nix-cachyos-kernel.url = "github:xddxdd/nix-cachyos-kernel/release";
+
+    noctalia = {
+      url = "github:noctalia-dev/noctalia-shell";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
-  outputs = { self, nixpkgs, home-manager, nixos-hardware, nix-cachyos-kernel, ... }@inputs:
+  outputs = { self, nixpkgs, home-manager, nixos-hardware, nix-cachyos-kernel, noctalia, ... }@inputs:
   let
     sharedModules = [
       ./modules/locale.nix
-      ./modules/desktop.nix
       ./modules/audio.nix
       ./modules/networking.nix
       ./modules/packages.nix
@@ -27,12 +31,35 @@
     ];
 
     laptopModules = [
+      ./modules/niri.nix
       ./modules/gaming.nix
       ./modules/laptop/nvidia.nix
       ./modules/laptop/power.nix
       ./modules/laptop/rog.nix
       ./modules/laptop/kernel-tweaks.nix
       ./modules/laptop/btrfs-snapshots.nix
+
+      # Home Manager
+      home-manager.nixosModules.home-manager
+      {
+        home-manager = {
+          useGlobalPkgs = true;
+          useUserPackages = true;
+          backupFileExtension = "backup";
+          extraSpecialArgs = { inherit inputs; };
+          sharedModules = [
+            ({ osConfig, ... }: {
+              _module.args.hostName = osConfig.networking.hostName;
+            })
+          ];
+          users.marco = {
+            imports = [
+              ./home/common.nix
+              ./home/niri.nix
+            ];
+          };
+        };
+      }
     ];
   in
   {
@@ -42,6 +69,7 @@
         system = "aarch64-linux";
         specialArgs = { inherit inputs; };
         modules = sharedModules ++ [
+          ./modules/desktop.nix  # KDE Plasma for VM
           ./hosts/vm
         ];
       };
