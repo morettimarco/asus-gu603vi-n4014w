@@ -12,6 +12,14 @@
 
   networking.hostName = "nixos-vm";
 
+  # --- GPU acceleration (VirGL via virtio-gpu) ---
+  hardware.graphics = {
+    enable = true;
+    extraPackages = with pkgs; [
+      virglrenderer
+    ];
+  };
+
   # Printing (VM convenience)
   services.printing.enable = true;
 

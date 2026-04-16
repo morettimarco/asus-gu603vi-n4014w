@@ -1,5 +1,10 @@
 // Niri desktop config (for future external monitor / docked use)
 
+output "Virtual-1" {
+    mode "1920x1200@59.885"
+    scale 1
+}
+
 input {
     warp-mouse-to-focus
     focus-follows-mouse max-scroll-amount="0%"
@@ -69,8 +74,9 @@ window-rule {
 
 binds {
     Mod+Shift+Slash { show-hotkey-overlay; }
-    Mod+Return { spawn "ghostty"; }
-    Mod+D      { spawn "fuzzel"; }
+    Mod+Return       { spawn "foot"; }
+    Mod+Shift+Return { spawn "ghostty"; } // needs GPU (won't work in VM)
+    Mod+D            { spawn "fuzzel"; }
     Super+Shift+L { spawn-sh "noctalia-shell ipc call lockScreen lock"; }
     Mod+Space     { spawn-sh "noctalia-shell ipc call settings toggle"; }
 

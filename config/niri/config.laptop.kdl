@@ -108,8 +108,9 @@ binds {
     Mod+Shift+Slash { show-hotkey-overlay; }
 
     // Launch
-    Mod+Return { spawn "ghostty"; }
-    Mod+D      { spawn "fuzzel"; }
+    Mod+Return       { spawn "ghostty"; }
+    Mod+Shift+Return { spawn "foot"; }    // fallback terminal
+    Mod+D            { spawn "fuzzel"; }
 
     // Noctalia integration
     Super+Shift+L { spawn-sh "noctalia-shell ipc call lockScreen lock"; }

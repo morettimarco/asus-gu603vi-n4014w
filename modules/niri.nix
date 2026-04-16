@@ -26,6 +26,7 @@ in
     grim
     slurp
     ghostty
+    foot       # lightweight fallback terminal (no GPU accel needed)
   ] ++ lib.optionals isX86 [
     gpu-screen-recorder  # x86_64 only
   ];
