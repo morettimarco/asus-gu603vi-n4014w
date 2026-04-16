@@ -1,5 +1,8 @@
-{ pkgs, inputs, ... }:
+{ pkgs, lib, inputs, ... }:
 
+let
+  isX86 = pkgs.stdenv.hostPlatform.isx86_64;
+in
 {
   # --- Niri compositor ---
   programs.niri.enable = true;
@@ -15,7 +18,6 @@
     papirus-icon-theme
     nemo
     fuzzel
-    gpu-screen-recorder
     wl-clipboard
     libsForQt5.qt5ct
     mpvpaper
@@ -24,6 +26,8 @@
     grim
     slurp
     ghostty
+  ] ++ lib.optionals isX86 [
+    gpu-screen-recorder  # x86_64 only
   ];
 
   # --- Login: tuigreet → niri-session ---

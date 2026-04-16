@@ -20,7 +20,10 @@
       "Bash(git add:*)",
       "Bash(nix flake:*)",
       "WebFetch(domain:raw.githubusercontent.com)",
-      "WebFetch(domain:github.com)"
+      "WebFetch(domain:github.com)",
+      "Bash(git:*)",
+      "WebFetch(domain:codeberg.org)",
+      "Bash(curl:*)"
     ]
   }
 }

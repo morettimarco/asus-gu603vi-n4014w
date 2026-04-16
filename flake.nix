@@ -28,18 +28,9 @@
       ./modules/networking.nix
       ./modules/packages.nix
       ./modules/users.nix
-    ];
-
-    laptopModules = [
       ./modules/niri.nix
-      ./modules/gaming.nix
-      ./modules/laptop/nvidia.nix
-      ./modules/laptop/power.nix
-      ./modules/laptop/rog.nix
-      ./modules/laptop/kernel-tweaks.nix
-      ./modules/laptop/btrfs-snapshots.nix
 
-      # Home Manager
+      # Home Manager (shared across all hosts)
       home-manager.nixosModules.home-manager
       {
         home-manager = {
@@ -61,6 +52,15 @@
         };
       }
     ];
+
+    laptopModules = [
+      ./modules/gaming.nix
+      ./modules/laptop/nvidia.nix
+      ./modules/laptop/power.nix
+      ./modules/laptop/rog.nix
+      ./modules/laptop/kernel-tweaks.nix
+      ./modules/laptop/btrfs-snapshots.nix
+    ];
   in
   {
     nixosConfigurations = {
@@ -69,7 +69,6 @@
         system = "aarch64-linux";
         specialArgs = { inherit inputs; };
         modules = sharedModules ++ [
-          ./modules/desktop.nix  # KDE Plasma for VM
           ./hosts/vm
         ];
       };
