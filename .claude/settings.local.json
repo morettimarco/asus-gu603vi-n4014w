@@ -1,7 +1,26 @@
 {
   "permissions": {
     "allow": [
-      "Bash(sudo nixos-rebuild:*)"
+      "Bash(sudo nixos-rebuild:*)",
+      "WebSearch",
+      "Bash(nix eval:*)",
+      "Bash(nixos-option boot.loader.limine)",
+      "Bash(nixos-option boot.loader.limine.style)",
+      "Bash(nixos-option boot.loader.limine.extraEntries)",
+      "Bash(nixos-option boot.loader.limine.extraConfig)",
+      "Bash(nixos-option services.snapper)",
+      "Bash(nixos-option boot.initrd.luks)",
+      "Bash(nixos-option programs.steam)",
+      "Bash(nixos-option programs.gamemode)",
+      "Bash(nixos-option programs.gamescope)",
+      "Bash(nixos-option zramSwap)",
+      "Bash(nixos-option hardware.xpadneo)",
+      "Bash(nixos-option hardware.xone)",
+      "Bash(nixos-option hardware.steam-hardware)",
+      "Bash(git add:*)",
+      "Bash(nix flake:*)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "WebFetch(domain:github.com)"
     ]
   }
 }
