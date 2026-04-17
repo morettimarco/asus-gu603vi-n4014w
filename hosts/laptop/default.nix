@@ -10,11 +10,9 @@
     inputs.nix-cachyos-kernel.overlays.default
   ];
 
-  # --- Bootloader: Limine ---
-  boot.loader.limine = {
-    enable = true;
-    maxGenerations = 10;
-  };
+  # --- Bootloader: systemd-boot ---
+  boot.loader.systemd-boot.enable = true;
+  boot.loader.systemd-boot.configurationLimit = 10;
   boot.loader.efi.canTouchEfiVariables = true;
 
   # --- Kernel: CachyOS (gaming-optimized, BORE scheduler) ---

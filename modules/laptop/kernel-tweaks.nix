@@ -21,5 +21,10 @@
 
     # Explicit NVIDIA DRM modesetting (belt-and-suspenders with hardware.nvidia.modesetting)
     "nvidia-drm.modeset=1"
+
+    # Backlight: use Intel i915 DPCD for brightness, disable NVIDIA handler (prevents conflicts)
+    "i915.enable_dpcd_backlight=1"
+    "nvidia.NVreg_EnableBacklightHandler=0"
+    "nvidia.NVReg_RegistryDwords=EnableBrightnessControl=0"
   ];
 }

@@ -1,16 +1,20 @@
-# PLACEHOLDER — replace with output of `nixos-generate-config --show-hardware-config`
-# after partitioning the ASUS ROG Zephyrus G16 GU603VI.
+# Hardware configuration for ASUS ROG Zephyrus G16 GU603VI
 #
-# Intended partition layout:
+# IMPORTANT: Replace CHANGEME values with real UUIDs from your install.
+# Run these commands to get them:
+#   blkid /dev/nvme0n1p2   → LUKS partition UUID
+#   blkid /dev/nvme0n1p1   → ESP UUID
+#
+# Expected partition layout:
 #   /dev/nvme0n1p1  — 4GB ESP (FAT32) → /boot
-#   /dev/nvme0n1p2  — rest of 4TB NVMe → LUKS → Btrfs
+#   /dev/nvme0n1p2  — rest of NVMe → LUKS2 → Btrfs
 #
-# Btrfs subvolumes (create during install):
-#   btrfs subvolume create /mnt/@
-#   btrfs subvolume create /mnt/@home
-#   btrfs subvolume create /mnt/@nix
-#   btrfs subvolume create /mnt/@snapshots
-#   btrfs subvolume create /mnt/@var_log
+# Btrfs subvolumes:
+#   @          → /
+#   @home      → /home
+#   @nix       → /nix
+#   @snapshots → /.snapshots
+#   @var_log   → /var/log
 
 { config, lib, pkgs, modulesPath, ... }:
 
@@ -19,7 +23,7 @@
     (modulesPath + "/installer/scan/not-detected.nix")
   ];
 
-  boot.initrd.availableKernelModules = [ "xhci_pci" "thunderbolt" "nvme" "usb_storage" "sd_mod" ];
+  boot.initrd.availableKernelModules = [ "xhci_pci" "thunderbolt" "vmd" "nvme" "uas" "usbhid" "usb_storage" "sd_mod" "sdhci_pci" ];
   boot.initrd.kernelModules = [ ];
   boot.kernelModules = [ "kvm-intel" ];
   boot.extraModulePackages = [ ];

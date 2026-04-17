@@ -12,6 +12,8 @@
   programs.git = {
     enable = true;
     package = pkgs.git;
+    userName = "Marco Moretti";
+    userEmail = "marco.moretti@gmail.com";
     settings = {
       core.editor = "vim";
     };

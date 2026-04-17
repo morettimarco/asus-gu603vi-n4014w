@@ -43,6 +43,7 @@
     ];
 
     laptopModules = [
+      nixos-hardware.nixosModules.asus-zephyrus-gu603h
       ./modules/gaming.nix
       ./modules/laptop/nvidia.nix
       ./modules/laptop/power.nix
@@ -53,14 +54,6 @@
   in
   {
     nixosConfigurations = {
-
-      vm = nixpkgs.lib.nixosSystem {
-        system = "aarch64-linux";
-        specialArgs = { inherit inputs; };
-        modules = sharedModules ++ [
-          ./hosts/vm
-        ];
-      };
 
       laptop = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";

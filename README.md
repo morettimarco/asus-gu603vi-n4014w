@@ -2,47 +2,57 @@
 
 Gaming-optimized, modular NixOS flake configuration for the ASUS ROG Zephyrus G16, featuring LUKS encryption, Btrfs snapshots, CachyOS kernel, and NVIDIA hybrid graphics.
 
+**Verified working** on actual hardware (2026-04-17).
+
 ## Target Hardware
 
 | Component | Specification |
 |-----------|---------------|
 | **Model** | ASUS ROG Zephyrus G16 GU603VI-N4014W |
-| **CPU** | Intel Core i7-13620H (13th gen, 6P + 4E cores) |
-| **GPU** | NVIDIA GeForce RTX 4070 Laptop (8GB) + Intel UHD (hybrid) |
+| **CPU** | Intel Core i7-13620H (13th gen, 6P + 4E cores, 16 threads) |
+| **GPU** | NVIDIA GeForce RTX 4070 Max-Q (8GB, AD106M) + Intel UHD (hybrid) |
 | **RAM** | 48GB DDR4-3200 (16GB soldered + 32GB SO-DIMM) |
 | **Storage** | 4TB PCIe 4.0 NVMe SSD |
 | **Display** | 16" QHD+ 2560x1600 IPS 240Hz, DCI-P3 100%, G-Sync |
-| **WiFi** | Wi-Fi 6E (802.11ax) tri-band + Bluetooth 5.3 |
+| **WiFi** | Intel AX211 Wi-Fi 6E tri-band + Bluetooth 5.3 |
 | **Battery** | 90Wh 4-cell |
+
+## Quick Start with Claude Code
+
+On a fresh NixOS install, just give Claude Code this repo URL and ask it to set up the system. The `CLAUDE.md` file contains full autonomous setup instructions.
+
+```bash
+# Install claude-code, then:
+claude
+> Set up my system using https://github.com/morettimarco/asus-gu603vi-n4014w
+```
 
 ## Repository Structure
 
 ```
-flake.nix                          # Entry point: inputs, host definitions
-flake.lock                         # Pinned dependency versions
+CLAUDE.md                              # Autonomous setup instructions for Claude Code
+flake.nix                              # Entry point: inputs, host definitions
+flake.lock                             # Pinned dependency versions
 hosts/
-  vm/
-    default.nix                    # VM host config (aarch64, systemd-boot)
-    hardware.nix                   # VM hardware (QEMU/UTM guest)
   laptop/
-    default.nix                    # Laptop host config (Limine, CachyOS kernel)
-    hardware.nix                   # Btrfs + LUKS partition template (EDIT THIS)
+    default.nix                        # Bootloader (systemd-boot), CachyOS kernel
+    hardware.nix                       # LUKS + Btrfs partition template (EDIT UUIDs)
 modules/
-  locale.nix                       # Timezone (Europe/Rome), i18n, Italian keyboard
-  desktop.nix                      # KDE Plasma 6 + SDDM
-  audio.nix                        # PipeWire + ALSA + PulseAudio compat
-  networking.nix                   # NetworkManager
-  packages.nix                     # System-wide packages (vim, wget, git, firefox)
-  users.nix                        # User account (marco)
-  gaming.nix                       # Steam, Gamescope, Gamemode, MangoHud, controllers
+  locale.nix                           # Timezone (Europe/Rome), i18n, Italian keyboard
+  desktop.nix                          # KDE Plasma 6 + SDDM
+  audio.nix                            # PipeWire + ALSA + PulseAudio compat
+  networking.nix                       # NetworkManager
+  packages.nix                         # System packages (vim, git, firefox, sensors, nvtop)
+  users.nix                            # User account (marco)
+  gaming.nix                           # Steam, Gamescope, Gamemode, MangoHud, controllers
   laptop/
-    nvidia.nix                     # RTX 4070 proprietary + PRIME offload
-    power.nix                      # zram, auto-cpufreq, thermald
-    rog.nix                        # asusd, supergfxctl (fan profiles, GPU switching)
-    kernel-tweaks.nix              # Gaming sysctls, split_lock_detect=off
-    btrfs-snapshots.nix            # Snapper snapshot config
+    nvidia.nix                         # RTX 4070 open driver + PRIME offload
+    power.nix                          # zram, auto-cpufreq, thermald
+    rog.nix                            # asusd, supergfxctl (fan profiles, GPU switching)
+    kernel-tweaks.nix                  # Gaming sysctls, backlight, split_lock_detect=off
+    btrfs-snapshots.nix                # Snapper snapshot config
 home/
-  common.nix                       # Home Manager: git, starship, btop
+  common.nix                           # Home Manager: git, starship, btop
 ```
 
 ## Flake Inputs
@@ -51,7 +61,7 @@ home/
 |-------|--------|---------|
 | `nixpkgs` | `nixos-unstable` | Base packages (latest) |
 | `home-manager` | `nix-community/home-manager` | Declarative user environment |
-| `nixos-hardware` | `NixOS/nixos-hardware` | Community hardware profiles |
+| `nixos-hardware` | `NixOS/nixos-hardware` | ASUS Zephyrus hardware profile (`gu603h`) |
 | `nix-cachyos-kernel` | `xddxdd/nix-cachyos-kernel` (release) | Gaming-optimized kernel with BORE scheduler |
 
 ## Key Features
@@ -63,13 +73,14 @@ home/
 - **MangoHud** FPS/stats overlay
 - **Lutris** and **Heroic** for non-Steam games
 - **ProtonUp-Qt** for managing Proton-GE versions
-- **Xbox** (Bluetooth + wireless dongle) and **PS5** controller support
+- **Xbox** (Bluetooth via xpadneo + wireless dongle via xone) controller support
 
 ### NVIDIA Hybrid Graphics
-- **Proprietary driver** (best performance for RTX 4070)
+- **Open kernel modules** (recommended by NVIDIA for Ada Lovelace GPUs)
 - **PRIME offload**: Intel iGPU for daily use, RTX 4070 on demand via `nvidia-offload`
 - Fine-grained power management (GPU powers down when idle)
 - 32-bit OpenGL support for Steam/Proton compatibility
+- Backlight handled by Intel i915 (NVIDIA handler disabled to prevent conflicts)
 
 ### Storage: LUKS + Btrfs
 - Full disk encryption with LUKS2
@@ -84,8 +95,8 @@ home/
 | `@snapshots` | `/.snapshots` | Snapper snapshots |
 | `@var_log` | `/var/log` | System logs |
 
-### Snapper Snapshots
-- Automatic timeline snapshots for `/` and `/home`
+### Automatic Snapshots
+- Snapper timeline snapshots for `/` and `/home`
 - Retention: 5 hourly, 7 daily, 4 weekly, 2 monthly
 - Snapshot on every boot
 
@@ -95,17 +106,17 @@ home/
 - **thermald** for Intel thermal management
 
 ### ASUS ROG Features
-- **asusd**: fan profiles, keyboard LED control, charge limit
-- **supergfxctl**: GPU mode switching (hybrid / dedicated / integrated)
+- **asusd**: fan profiles (Quiet/Balanced/Performance), keyboard LED control, charge limit
+- **supergfxctl**: GPU mode switching (Integrated / Hybrid / AsusMuxDgpu)
 
 ### Kernel Tweaks
 - **CachyOS kernel** with BORE scheduler (gaming-optimized)
 - `vm.max_map_count = 1048576` (required by many modern games)
 - `vm.swappiness = 5` (prefer RAM with 48GB available)
 - `split_lock_detect=off` (prevents game stuttering)
-- **Limine** bootloader (10 generations max)
+- Backlight: `i915.enable_dpcd_backlight=1` with NVIDIA handler disabled
 
-## Installation Guide
+## Manual Installation Guide
 
 ### Prerequisites
 
@@ -113,43 +124,24 @@ home/
 - The ASUS ROG Zephyrus G16 GU603VI
 - Internet connection
 
-### Step 1: Boot the Installer
-
-Boot from the NixOS USB. Open a terminal.
-
-### Step 2: Partition the Drive
+### Step 1: Boot the Installer and Partition
 
 ```bash
-# Identify the NVMe drive
-lsblk
-
 # Create partitions: 4GB ESP + rest for LUKS
 parted /dev/nvme0n1 -- mklabel gpt
 parted /dev/nvme0n1 -- mkpart ESP fat32 1MiB 4GiB
 parted /dev/nvme0n1 -- set 1 esp on
 parted /dev/nvme0n1 -- mkpart primary 4GiB 100%
 
-# Format the ESP
+# Format ESP
 mkfs.fat -F 32 -n BOOT /dev/nvme0n1p1
-```
 
-### Step 3: Set Up LUKS Encryption
-
-```bash
-# Encrypt the main partition
+# Set up LUKS encryption
 cryptsetup luksFormat --type luks2 /dev/nvme0n1p2
-
-# Open it
 cryptsetup open /dev/nvme0n1p2 cryptroot
-```
 
-### Step 4: Create Btrfs Subvolumes
-
-```bash
-# Format as Btrfs
+# Create Btrfs with subvolumes
 mkfs.btrfs -L nixos /dev/mapper/cryptroot
-
-# Mount and create subvolumes
 mount /dev/mapper/cryptroot /mnt
 btrfs subvolume create /mnt/@
 btrfs subvolume create /mnt/@home
@@ -158,7 +150,7 @@ btrfs subvolume create /mnt/@snapshots
 btrfs subvolume create /mnt/@var_log
 umount /mnt
 
-# Mount subvolumes with options
+# Mount everything
 mount -o subvol=@,compress=zstd:1,noatime,ssd,discard=async /dev/mapper/cryptroot /mnt
 mkdir -p /mnt/{home,nix,.snapshots,var/log,boot}
 mount -o subvol=@home,compress=zstd:1,noatime,ssd,discard=async /dev/mapper/cryptroot /mnt/home
@@ -168,151 +160,92 @@ mount -o subvol=@var_log,compress=zstd:1,noatime,ssd,discard=async /dev/mapper/c
 mount /dev/nvme0n1p1 /mnt/boot
 ```
 
-### Step 5: Generate Hardware Config
+### Step 2: Install Minimal NixOS
 
 ```bash
-nixos-generate-config --root /mnt --show-hardware-config > /tmp/hardware.nix
-```
-
-Keep this output — you will need it in Step 7.
-
-### Step 6: Clone This Repository
-
-```bash
-nix-shell -p git
-
-# Clone into the NixOS config directory
-git clone https://github.com/morettimarco/asus-gu603vi-n4014w.git /mnt/etc/nixos
-```
-
-### Step 7: Update Hardware Configuration
-
-Edit `hosts/laptop/hardware.nix` with the real values:
-
-```bash
-# Get your partition UUIDs
-blkid /dev/nvme0n1p2   # LUKS partition UUID
-blkid /dev/nvme0n1p1   # ESP UUID
-```
-
-Replace in `hosts/laptop/hardware.nix`:
-- `CHANGEME-LUKS-UUID` with the UUID of `/dev/nvme0n1p2` (the LUKS partition, NOT `/dev/mapper/cryptroot`)
-- `CHANGEME-ESP-UUID` with the UUID of `/dev/nvme0n1p1`
-
-Also merge any hardware-specific entries from the `nixos-generate-config` output (Step 5) that aren't already in the file, such as additional kernel modules.
-
-### Step 8: Verify NVIDIA Bus IDs
-
-```bash
-lspci | grep VGA
-```
-
-You should see two entries (Intel and NVIDIA). Update the bus IDs in `modules/laptop/nvidia.nix` if they differ from:
-- `intelBusId = "PCI:0:2:0"`
-- `nvidiaBusId = "PCI:1:0:0"`
-
-The format is `PCI:bus:device:function` — convert from lspci hex (e.g., `01:00.0` becomes `PCI:1:0:0`).
-
-### Step 9: Install
-
-```bash
-nixos-install --flake /mnt/etc/nixos#laptop
-```
-
-Set the root password when prompted. After installation:
-
-```bash
+nixos-generate-config --root /mnt
+# Edit /mnt/etc/nixos/configuration.nix to add:
+#   nix.settings.experimental-features = [ "nix-command" "flakes" ];
+#   environment.systemPackages = [ pkgs.git pkgs.vim ];
+#   users.users.marco = { isNormalUser = true; extraGroups = [ "wheel" ]; };
+nixos-install
 reboot
 ```
 
-### Step 10: Post-Install
+### Step 3: Clone and Apply This Config
 
-After booting into the new system:
-
-```bash
-# Set your user password
-passwd marco
-
-# Verify NVIDIA works
-nvidia-smi
-nvidia-offload glxinfo | grep "OpenGL renderer"
-
-# Verify ASUS ROG tools
-asusctl profile -l
-
-# Test snapper
-snapper -c root list
-```
-
-## VM Configuration
-
-A VM configuration is included for development/testing on UTM (aarch64):
+After booting into the minimal install:
 
 ```bash
-sudo nixos-rebuild switch --flake .#vm
-```
+git clone https://github.com/morettimarco/asus-gu603vi-n4014w.git ~/nixos-config
+cd ~/nixos-config
 
-This provides the same base stack (KDE Plasma 6, PipeWire, Home Manager) without laptop-specific hardware modules.
+# Get your UUIDs
+blkid /dev/nvme0n1p2 -s UUID -o value  # LUKS UUID
+blkid /dev/nvme0n1p1 -s UUID -o value  # ESP UUID
 
-## Updating
+# Edit hosts/laptop/hardware.nix — replace CHANGEME values with real UUIDs
+vim hosts/laptop/hardware.nix
 
-```bash
-# Update all flake inputs
-nix flake update
-
-# Rebuild
+# Build and apply
 sudo nixos-rebuild switch --flake .#laptop
+
+# Reboot to load CachyOS kernel + NVIDIA drivers
+sudo reboot
 ```
 
-## Customization
+### Step 4: Verify
 
-### Adding Packages
+```bash
+uname -r              # CachyOS kernel
+nvidia-smi            # RTX 4070 detected
+asusctl profile list  # Quiet/Balanced/Performance
+zramctl               # ~12GB lz4 swap
+steam                 # Launch Steam
+```
 
-System-wide packages go in `modules/packages.nix`. User packages go in `modules/users.nix` under `users.users.marco.packages`.
-
-### Changing Desktop Environment
-
-The desktop environment is configured in `modules/desktop.nix`. Currently set to KDE Plasma 6 with SDDM.
+## Daily Usage
 
 ### GPU Modes
 
-Switch between hybrid/dedicated/integrated GPU modes:
-
 ```bash
-# Check current mode
-supergfxctl -g
+# Run a game on the NVIDIA GPU
+nvidia-offload <game-command>
 
-# Switch to dedicated GPU (best gaming performance)
-supergfxctl -m Dedicated
+# In Steam: set launch options to
+nvidia-offload %command%
 
-# Switch back to hybrid (battery saving)
-supergfxctl -m Hybrid
+# Switch GPU mode (requires logout)
+supergfxctl -s                    # Show available modes
+supergfxctl -m Hybrid             # Hybrid (battery saving)
+supergfxctl -m AsusMuxDgpu        # Dedicated (max performance)
 ```
 
-### Fan Profiles
+### ASUS Controls
 
 ```bash
-# List profiles
-asusctl profile -l
-
-# Cycle to next profile
-asusctl profile -n
-
-# Set specific profile
-asusctl profile -P Performance
+asusctl profile list              # List power profiles
+asusctl profile get               # Current profile
+asusctl profile set Performance   # Set profile
+asusctl leds brightness <0-3>     # Keyboard backlight
+asusctl battery limit 80          # Charge limit (extends battery life)
 ```
 
-### Btrfs Snapshot Rollback
+### Snapshots
 
 ```bash
-# List snapshots
-snapper -c root list
+snapper -c root list                          # List root snapshots
+snapper -c home list                          # List home snapshots
+snapper -c root create -d "before upgrade"    # Manual snapshot
+snapper -c root undochange 1..2               # Undo changes
+```
 
-# Create manual snapshot
-snapper -c root create -d "before risky change"
+### Updating
 
-# Undo changes between snapshots
-snapper -c root undochange 1..2
+```bash
+cd ~/nixos-config
+nix flake update                              # Update all inputs
+sudo nixos-rebuild switch --flake .#laptop    # Apply
 ```
 
 ## License
