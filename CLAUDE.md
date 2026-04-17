@@ -93,7 +93,7 @@ This will take a while (CachyOS kernel compiles from source). If it fails, fix t
 
 ```bash
 cd /home/marco/nixos-config
-sudo nixos-rebuild switch --flake .#laptop
+sudo nixos-rebuild switch --flake .#zephyrus
 ```
 
 **Step 8: Reboot**
@@ -150,7 +150,7 @@ If migrating from one drive to another while the system is running:
 2. Mount all subvolumes under `/mnt`
 3. Copy the config: `cp -r /home/marco/nixos-config /mnt/home/marco/nixos-config`
 4. Update `hardware.nix` with new UUIDs
-5. Run: `sudo nixos-install --flake /mnt/home/marco/nixos-config#laptop --root /mnt`
+5. Run: `sudo nixos-install --flake /mnt/home/marco/nixos-config#zephyrus --root /mnt`
 6. Reboot into the new drive
 
 ## Partition Layout Reference

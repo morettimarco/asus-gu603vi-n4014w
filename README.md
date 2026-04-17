@@ -188,7 +188,7 @@ blkid /dev/nvme0n1p1 -s UUID -o value  # ESP UUID
 vim hosts/laptop/hardware.nix
 
 # Build and apply
-sudo nixos-rebuild switch --flake .#laptop
+sudo nixos-rebuild switch --flake .#zephyrus
 
 # Reboot to load CachyOS kernel + NVIDIA drivers
 sudo reboot
@@ -245,7 +245,7 @@ snapper -c root undochange 1..2               # Undo changes
 ```bash
 cd ~/nixos-config
 nix flake update                              # Update all inputs
-sudo nixos-rebuild switch --flake .#laptop    # Apply
+sudo nixos-rebuild switch --flake .#zephyrus    # Apply
 ```
 
 ## License
