@@ -16,6 +16,7 @@
       user.name = "Marco Moretti";
       user.email = "marco.moretti@gmail.com";
       core.editor = "vim";
+      credential.helper = "!gh auth git-credential";
     };
   };
 
