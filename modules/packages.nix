@@ -17,6 +17,7 @@
     lm_sensors        # sensors (CPU/GPU temperatures)
     nvtopPackages.full # GPU monitoring
     htop              # process monitoring
+    neovim
 
     # Development
     gh                # GitHub CLI
