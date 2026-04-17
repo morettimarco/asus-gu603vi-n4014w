@@ -49,7 +49,8 @@
       ./modules/laptop/power.nix
       ./modules/laptop/rog.nix
       ./modules/laptop/kernel-tweaks.nix
-      ./modules/laptop/btrfs-snapshots.nix
+      # Enable btrfs-snapshots.nix when on Btrfs:
+      # ./modules/laptop/btrfs-snapshots.nix
     ];
   in
   {

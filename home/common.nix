@@ -12,9 +12,9 @@
   programs.git = {
     enable = true;
     package = pkgs.git;
-    userName = "Marco Moretti";
-    userEmail = "marco.moretti@gmail.com";
     settings = {
+      user.name = "Marco Moretti";
+      user.email = "marco.moretti@gmail.com";
       core.editor = "vim";
     };
   };

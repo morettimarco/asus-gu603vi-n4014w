@@ -66,6 +66,8 @@ Edit `hosts/laptop/hardware.nix`:
 
 Also run `nixos-generate-config --show-hardware-config` and check if there are any additional kernel modules in `boot.initrd.availableKernelModules` that aren't already listed. Add any missing ones.
 
+**IMPORTANT:** If the system uses LUKS+Btrfs, uncomment `./modules/laptop/btrfs-snapshots.nix` in `laptopModules` in `flake.nix`. If the system uses ext4 or any non-Btrfs filesystem, it MUST stay commented out or the system will crash during activation.
+
 **Step 5: Verify GPU bus IDs**
 
 ```bash
@@ -137,7 +139,7 @@ If the system is running on a simple ext4 partition (e.g., temporary test drive)
    ```bash
    nixos-generate-config --show-hardware-config
    ```
-3. Remove `./modules/laptop/btrfs-snapshots.nix` from `laptopModules` in `flake.nix` (Snapper requires Btrfs)
+3. Ensure `./modules/laptop/btrfs-snapshots.nix` stays commented out in `laptopModules` in `flake.nix` (Snapper requires Btrfs — enabling it on ext4 will crash the system)
 4. Continue from Step 5
 
 ### Scenario C: Reinstalling from a running system
