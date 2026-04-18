@@ -17,15 +17,39 @@ Gaming-optimized, modular NixOS flake configuration for the ASUS ROG Zephyrus G1
 | **WiFi** | Intel AX211 Wi-Fi 6E tri-band + Bluetooth 5.3 |
 | **Battery** | 90Wh 4-cell |
 
-## Quick Start with Claude Code
+## Quick Start
 
-On a fresh NixOS install, just give Claude Code this repo URL and ask it to set up the system. The `CLAUDE.md` file contains full autonomous setup instructions.
+On a fresh NixOS install (any filesystem, any drive):
 
 ```bash
-# Install claude-code, then:
+# 1. Enable flakes (add to /etc/nixos/configuration.nix):
+#    nix.settings.experimental-features = [ "nix-command" "flakes" ];
+#    then: sudo nixos-rebuild switch
+
+# 2. Clone the repo
+nix-shell -p git --run "git clone https://github.com/morettimarco/asus-gu603vi-n4014w.git ~/nixos-config"
+
+# 3. Replace hardware.nix with your actual hardware
+nixos-generate-config --show-hardware-config > ~/nixos-config/hosts/laptop/hardware.nix
+
+# 4. Build and apply
+cd ~/nixos-config
+sudo nixos-rebuild boot --flake .#zephyrus
+
+# 5. Reboot
+sudo reboot
+```
+
+### With Claude Code
+
+Alternatively, install `claude-code` and let it handle everything autonomously:
+
+```bash
 claude
 > Set up my system using https://github.com/morettimarco/asus-gu603vi-n4014w
 ```
+
+The `CLAUDE.md` file contains full autonomous setup instructions.
 
 ## Repository Structure
 
