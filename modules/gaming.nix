@@ -6,6 +6,7 @@
     enable = true;
     remotePlay.openFirewall = true;
     localNetworkGameTransfers.openFirewall = true;
+    extraCompatPackages = [ pkgs.proton-ge-bin ];
   };
 
   # --- Gamescope (micro-compositor for games) ---
@@ -31,5 +32,7 @@
     protonup-qt    # manage Proton-GE versions
     lutris         # multi-platform game launcher
     heroic         # Epic/GOG/Amazon launcher
+    glmark2        # OpenGL benchmark
+    vulkan-tools   # vulkaninfo, vkcube
   ];
 }

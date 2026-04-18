@@ -16,6 +16,10 @@
     # Open kernel modules (recommended for Ada Lovelace / RTX 4070 Max-Q)
     open = true;
     package = config.boot.kernelPackages.nvidiaPackages.stable;
+    nvidiaSettings = true;
+
+    # Dynamic Boost: allows GPU to draw up to 120W (default limit is 80W)
+    dynamicBoost.enable = true;
 
     # Power management
     powerManagement.enable = true;
