@@ -1,5 +1,13 @@
 # Hardware configuration for ASUS ROG Zephyrus G16 GU603VI
-# Current: ext4 on SATA (temporary test drive)
+#
+# IMPORTANT: Replace the CHANGEME placeholders with your actual UUIDs.
+# Run these commands to get them:
+#
+#   blkid <your-luks-partition> -s UUID -o value   → LUKS UUID
+#   blkid <your-esp-partition>  -s UUID -o value   → ESP UUID
+#
+# If you don't use LUKS, replace hardware.nix entirely with the output of:
+#   nixos-generate-config --show-hardware-config
 
 { config, lib, pkgs, modulesPath, ... }:
 
@@ -13,13 +21,20 @@
   boot.kernelModules = [ "kvm-intel" ];
   boot.extraModulePackages = [ ];
 
+  # --- LUKS encryption ---
+  boot.initrd.luks.devices."luks-CHANGEME-LUKS-UUID" = {
+    device = "/dev/disk/by-uuid/CHANGEME-LUKS-UUID";
+  };
+
+  # --- Root filesystem (ext4 on LUKS) ---
   fileSystems."/" = {
-    device = "/dev/disk/by-uuid/c4758541-ec80-48ad-8d21-cb323258debe";
+    device = "/dev/mapper/luks-CHANGEME-LUKS-UUID";
     fsType = "ext4";
   };
 
+  # --- Boot partition ---
   fileSystems."/boot" = {
-    device = "/dev/disk/by-uuid/C52C-57FF";
+    device = "/dev/disk/by-uuid/CHANGEME-ESP-UUID";
     fsType = "vfat";
     options = [ "fmask=0077" "dmask=0077" ];
   };
