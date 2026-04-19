@@ -10,7 +10,7 @@ Gaming-optimized, modular NixOS flake configuration for the ASUS ROG Zephyrus G1
 | **CPU** | Intel Core i7-13620H (13th gen, 6P + 4E cores, 16 threads) |
 | **GPU** | NVIDIA GeForce RTX 4070 Max-Q (8GB) + Intel UHD (hybrid) |
 | **RAM** | 48GB DDR4-3200 (16GB soldered + 32GB SO-DIMM) |
-| **Storage** | 4TB PCIe 4.0 NVMe SSD |
+| **Storage** | Any drive with LUKS encryption + ext4 |
 | **Display** | 16" QHD+ 2560x1600 IPS 240Hz, G-Sync |
 | **WiFi** | Intel AX211 Wi-Fi 6E + Bluetooth 5.3 |
 
@@ -31,7 +31,7 @@ Gaming-optimized, modular NixOS flake configuration for the ASUS ROG Zephyrus G1
 This guide assumes you have:
 
 1. The ASUS ROG Zephyrus G16 GU603VI (or similar hardware)
-2. A fresh NixOS installation with **KDE Plasma 6 desktop** (installed via the NixOS graphical installer)
+2. A fresh NixOS installation with **KDE Plasma 6 desktop** (installed via the NixOS graphical installer, with LUKS encryption and ext4)
 3. A working internet connection
 
 The NixOS graphical installer handles partitioning, LUKS encryption, and the base install for you. This configuration is then applied **on top** of that fresh install.
@@ -88,7 +88,7 @@ Edit `hosts/laptop/hardware.nix` and replace:
 - Every instance of `CHANGEME-LUKS-UUID` with your LUKS partition's UUID
 - `CHANGEME-ESP-UUID` with your ESP partition's UUID
 
-**If the NixOS installer did NOT set up LUKS** (plain ext4/Btrfs without encryption):
+**If the NixOS installer did NOT set up LUKS** (plain ext4 without encryption):
 
 Replace `hardware.nix` entirely with your actual hardware config:
 
@@ -173,20 +173,6 @@ Claude Code will read the `CLAUDE.md` file in this repo, which contains detailed
 5. Build and apply the configuration
 6. Guide you through a reboot and verification
 
-### Optional: LUKS + Btrfs with Snapshots
-
-If you set up your disk with Btrfs on LUKS (instead of ext4 on LUKS), you can enable automatic snapshots:
-
-1. Copy the Btrfs hardware template:
-   ```bash
-   cp hosts/laptop/hardware-nvme-luks-btrfs.nix.example hosts/laptop/hardware.nix
-   ```
-2. Replace the `CHANGEME` values with your UUIDs
-3. Uncomment `./modules/laptop/btrfs-snapshots.nix` in `flake.nix` (in the `laptopModules` list)
-4. Rebuild
-
-> **Warning:** Only enable `btrfs-snapshots.nix` if your root filesystem is actually Btrfs. Enabling it on ext4 will crash the system during activation.
-
 ## Repository Structure
 
 ```
@@ -197,7 +183,6 @@ hosts/
   laptop/
     default.nix                        # Bootloader (systemd-boot), CachyOS kernel
     hardware.nix                       # Disk layout — EDIT with your UUIDs
-    hardware-nvme-luks-btrfs.nix.example  # Template for Btrfs-on-LUKS setups
 modules/
   locale.nix                           # Timezone (Europe/Rome), i18n, Italian keyboard
   desktop.nix                          # KDE Plasma 6 + SDDM
@@ -211,7 +196,6 @@ modules/
     power.nix                          # zram, auto-cpufreq, thermald
     rog.nix                            # asusd, supergfxctl (fan profiles, GPU switching)
     kernel-tweaks.nix                  # Gaming sysctls, backlight, split_lock_detect=off
-    btrfs-snapshots.nix                # Snapper snapshots (Btrfs only — disabled by default)
 home/
   common.nix                           # Home Manager: git, starship prompt, btop
 ```
@@ -279,7 +263,6 @@ sudo nixos-rebuild switch --rollback
 | **No audio** | Check PipeWire: `systemctl --user status pipewire` and `wpctl status` |
 | **Screen brightness broken** | Check `ls /sys/class/backlight/` — the config uses `i915.enable_dpcd_backlight=1` |
 | **Build takes 15-30 minutes** | Normal for first build — the CachyOS kernel compiles from source. Subsequent rebuilds are fast |
-| **System crash with btrfs-snapshots** | Only enable `btrfs-snapshots.nix` on Btrfs filesystems. On ext4, it must stay commented out in `flake.nix` |
 
 ## License
 

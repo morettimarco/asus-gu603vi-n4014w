@@ -5,6 +5,9 @@
     username = "marco";
     homeDirectory = "/home/marco";
     stateVersion = "25.11";
+    packages = with pkgs; [
+      obsidian
+    ];
   };
 
   programs.home-manager.enable = true;
