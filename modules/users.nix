@@ -1,9 +1,11 @@
+  # CHANGEME: Replace CHANGEME_USERNAME with your Linux username
+  # and CHANGEME_DESCRIPTION with your display name.
 { pkgs, ... }:
 
 {
-  users.users.marco = {
+  users.users.CHANGEME_USERNAME = {
     isNormalUser = true;
-    description = "Marco";
+    description = "CHANGEME_DESCRIPTION";
     extraGroups = [ "networkmanager" "wheel" "gamemode" ];
     packages = with pkgs; [
       kdePackages.kate

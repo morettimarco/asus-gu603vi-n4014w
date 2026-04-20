@@ -39,31 +39,36 @@ nix.settings.experimental-features = [ "nix-command" "flakes" ];
 **Step 3: Clone this repository**
 
 ```bash
-nix-shell -p git --run "git clone https://github.com/morettimarco/asus-gu603vi-n4014w.git /home/marco/nixos-config"
+nix-shell -p git --run "git clone https://github.com/morettimarco/asus-gu603vi-n4014w.git /home/<username>/nixos-config"
 ```
 
 **Step 4: Update hardware.nix with real UUIDs**
 
-The file `hosts/laptop/hardware.nix` has `CHANGEME` placeholders. Replace them:
+The file `hosts/laptop/hardware.nix` has `CHANGEME` placeholders. The simplest approach is to replace it entirely:
 
 ```bash
-# Find LUKS partition UUID
-sudo blkid | grep crypto_LUKS
-# Find ESP UUID
-sudo blkid | grep -i fat
+nixos-generate-config --show-hardware-config > /home/<username>/nixos-config/hosts/laptop/hardware.nix
 ```
 
-Edit `hosts/laptop/hardware.nix`:
-- Replace every `CHANGEME-LUKS-UUID` with the LUKS partition UUID
-- Replace `CHANGEME-ESP-UUID` with the ESP UUID
+**Alternative:** Edit the placeholders manually. List all block devices to find UUIDs:
+
+```bash
+sudo blkid
+```
+
+Note: do NOT use `blkid | grep crypto_LUKS` — it may return nothing depending on partition labels. Instead, read the full `blkid` output and identify partitions by their `TYPE` field:
+- `TYPE="vfat"` with EFI/ESP label → **ESP UUID** (replace `CHANGEME-ESP-UUID`)
+- `TYPE="crypto_LUKS"` → **LUKS UUID** (replace all 3 instances of `CHANGEME-LUKS-UUID`)
 
 Also run `nixos-generate-config --show-hardware-config` and add any missing kernel modules to `boot.initrd.availableKernelModules`.
 
-**Alternative:** If the hardware config is significantly different, replace `hardware.nix` entirely:
+**Step 4b: Update username and personal details**
 
-```bash
-nixos-generate-config --show-hardware-config > /home/marco/nixos-config/hosts/laptop/hardware.nix
-```
+The configuration files contain `CHANGEME` placeholders for the username. Replace them with the actual user's details:
+
+- `modules/users.nix` — replace `CHANGEME_USERNAME` and `CHANGEME_DESCRIPTION`
+- `home/common.nix` — replace `CHANGEME_USERNAME`, `CHANGEME_FULL_NAME`, and `CHANGEME_EMAIL`
+- `flake.nix` — replace `users.CHANGEME_USERNAME`
 
 **Step 5: Verify GPU bus IDs**
 
@@ -78,7 +83,7 @@ Expected: Intel at `00:02.0` and NVIDIA at `01:00.0`. If different, update `modu
 **Step 6: Test build**
 
 ```bash
-cd /home/marco/nixos-config
+cd /home/<username>/nixos-config
 nix build .#nixosConfigurations.zephyrus.config.system.build.toplevel --no-link
 ```
 
@@ -112,7 +117,7 @@ cat /proc/sys/vm/max_map_count              # 1048576
 **Step 9: Set user password**
 
 ```bash
-sudo passwd marco
+sudo passwd <username>
 ```
 
 ### Scenario B: Existing NixOS install (different hardware.nix)
@@ -129,9 +134,9 @@ Migrating to a new drive:
 
 1. Partition and format the target drive (LUKS + ext4)
 2. Mount under `/mnt`
-3. Copy config: `cp -r /home/marco/nixos-config /mnt/home/marco/nixos-config`
+3. Copy config: `cp -r /home/<username>/nixos-config /mnt/home/<username>/nixos-config`
 4. Update `hardware.nix` with new UUIDs
-5. Run: `sudo nixos-install --flake /mnt/home/marco/nixos-config#zephyrus --root /mnt`
+5. Run: `sudo nixos-install --flake /mnt/home/<username>/nixos-config#zephyrus --root /mnt`
 6. Reboot into the new drive
 
 ## Troubleshooting
@@ -160,5 +165,5 @@ Migrating to a new drive:
 | `modules/locale.nix` | Europe/Rome, en_US.UTF-8, Italian keyboard |
 | `modules/networking.nix` | NetworkManager |
 | `modules/packages.nix` | vim, wget, git, claude-code, firefox, pciutils, sensors, nvtop, htop |
-| `modules/users.nix` | User marco (wheel, networkmanager, gamemode groups) |
+| `modules/users.nix` | User account (wheel, networkmanager, gamemode groups) |
 | `home/common.nix` | Home Manager: git, starship prompt, btop |

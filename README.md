@@ -42,21 +42,22 @@ There are two ways to set up this configuration: manually step by step, or autom
 
 ### Option A: Manual Installation
 
-#### Step 1: Enable Flakes
+#### Step 1: Install Prerequisites and Enable Flakes
 
-Flakes are the modern way to manage NixOS configurations but aren't enabled by default. Edit the system config that the installer created:
+A fresh NixOS install doesn't include `git`, `vim`, `lspci`, or other common tools. Start by adding them and enabling flakes. Use `nano` (the only editor available by default) to edit the system config:
 
 ```bash
-sudo vim /etc/nixos/configuration.nix
+sudo nano /etc/nixos/configuration.nix
 ```
 
-Add this line anywhere inside the curly braces:
+Add these lines anywhere inside the curly braces:
 
 ```nix
 nix.settings.experimental-features = [ "nix-command" "flakes" ];
+environment.systemPackages = with pkgs; [ git vim pciutils ];
 ```
 
-Apply the change:
+Save (`Ctrl+O`, `Enter`) and exit (`Ctrl+X`), then apply the change:
 
 ```bash
 sudo nixos-rebuild switch
@@ -71,30 +72,50 @@ cd ~/nixos-config
 
 #### Step 3: Configure hardware.nix
 
-The file `hosts/laptop/hardware.nix` contains `CHANGEME` placeholders that must be replaced with your actual disk UUIDs.
-
-**If the NixOS installer set up LUKS encryption** (the default when you check "Encrypt" during install):
-
-Find your UUIDs:
-
-```bash
-# Your LUKS partition UUID (the encrypted partition, NOT the mapper)
-sudo blkid | grep crypto_LUKS
-# Your ESP (boot) partition UUID
-sudo blkid | grep -i fat
-```
-
-Edit `hosts/laptop/hardware.nix` and replace:
-- Every instance of `CHANGEME-LUKS-UUID` with your LUKS partition's UUID
-- `CHANGEME-ESP-UUID` with your ESP partition's UUID
-
-**If the NixOS installer did NOT set up LUKS** (plain ext4 without encryption):
-
-Replace `hardware.nix` entirely with your actual hardware config:
+The file `hosts/laptop/hardware.nix` contains `CHANGEME` placeholders that must be replaced with your actual disk UUIDs and layout. The simplest approach is to replace the entire file with your system's auto-detected hardware config:
 
 ```bash
 nixos-generate-config --show-hardware-config > ~/nixos-config/hosts/laptop/hardware.nix
 ```
+
+This generates a complete hardware configuration with the correct UUIDs, kernel modules, and filesystem layout for your machine — whether you used LUKS encryption or not.
+
+**Verify the result:**
+
+```bash
+cat ~/nixos-config/hosts/laptop/hardware.nix
+```
+
+Check that it contains:
+- A `fileSystems."/"` entry (your root partition)
+- A `fileSystems."/boot"` entry (your ESP/boot partition)
+- If you enabled LUKS encryption during install, a `boot.initrd.luks.devices` entry
+
+<details>
+<summary>Alternative: editing hardware.nix manually</summary>
+
+If you prefer to edit the existing template rather than replacing it, you need your disk UUIDs. List all block devices:
+
+```bash
+sudo blkid
+```
+
+This outputs something like:
+
+```
+/dev/nvme0n1p1: UUID="ABCD-1234" TYPE="vfat" PARTLABEL="EFI System Partition" ...
+/dev/nvme0n1p2: UUID="12345678-abcd-..." TYPE="crypto_LUKS" PARTLABEL="root" ...
+/dev/mapper/luks-...: UUID="87654321-dcba-..." TYPE="ext4" ...
+```
+
+Identify your partitions by their `TYPE`:
+- **`TYPE="vfat"`** with `PARTLABEL="EFI System Partition"` — this is your **ESP UUID** (replace `CHANGEME-ESP-UUID`)
+- **`TYPE="crypto_LUKS"`** — this is your **LUKS UUID** (replace all 3 instances of `CHANGEME-LUKS-UUID`)
+- If you don't have LUKS, the **root UUID** is the `TYPE="ext4"` entry on your main partition
+
+Edit `hosts/laptop/hardware.nix` and replace the placeholders with the matching UUIDs.
+
+</details>
 
 #### Step 4: Verify GPU Bus IDs
 
@@ -112,12 +133,22 @@ Expected output:
 
 If the addresses are different, edit `modules/laptop/nvidia.nix` and update `intelBusId` and `nvidiaBusId`. The format is `PCI:bus:device:function` in decimal (e.g., `01:00.0` becomes `PCI:1:0:0`).
 
-#### Step 5: Customize User Settings
+#### Step 5: Set Your Username and Personal Details
 
-The default username is `marco`. If you want a different username, update it in:
-- `modules/users.nix` — the user account
-- `home/common.nix` — the Home Manager `username` and `homeDirectory`
-- `home/common.nix` — git `user.name` and `user.email`
+The configuration uses `CHANGEME` placeholders for the username and personal details. You **must** replace them before building. Search for `CHANGEME` across the repo to find all of them, or update these specific files:
+
+**`modules/users.nix`** — your Linux user account:
+- `CHANGEME_USERNAME` → your Linux username (e.g., `alice`)
+- `CHANGEME_DESCRIPTION` → your display name (e.g., `Alice`)
+
+**`home/common.nix`** — Home Manager and git identity:
+- `CHANGEME_USERNAME` → same Linux username as above
+- `/home/CHANGEME_USERNAME` → your home directory path
+- `CHANGEME_FULL_NAME` → your full name for git commits
+- `CHANGEME_EMAIL` → your email for git commits
+
+**`flake.nix`** — Home Manager user mapping:
+- `users.CHANGEME_USERNAME` → same Linux username as above
 
 #### Step 6: Build and Apply
 

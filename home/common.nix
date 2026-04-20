@@ -2,8 +2,8 @@
 
 {
   home = {
-    username = "marco";
-    homeDirectory = "/home/marco";
+    username = "CHANGEME_USERNAME";
+    homeDirectory = "/home/CHANGEME_USERNAME";
     stateVersion = "25.11";
     packages = with pkgs; [
       obsidian
@@ -16,8 +16,8 @@
     enable = true;
     package = pkgs.git;
     settings = {
-      user.name = "Marco Moretti";
-      user.email = "marco.moretti@gmail.com";
+      user.name = "CHANGEME_FULL_NAME";
+      user.email = "CHANGEME_EMAIL";
       core.editor = "vim";
       credential.helper = "!gh auth git-credential";
     };

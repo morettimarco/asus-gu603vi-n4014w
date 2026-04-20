@@ -1,5 +1,5 @@
 {
-  description = "Marco's NixOS configuration";
+  description = "NixOS configuration for ASUS ROG Zephyrus G16";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
@@ -33,7 +33,7 @@
           useUserPackages = true;
           backupFileExtension = "backup";
           extraSpecialArgs = { inherit inputs; };
-          users.marco = {
+          users.CHANGEME_USERNAME = {
             imports = [
               ./home/common.nix
             ];
