@@ -10,7 +10,17 @@
 
     # Reduce inode/dentry cache reclaim pressure
     "vm.vfs_cache_pressure" = 50;
+
+    # --- Network: BBR + FQ (lower latency, standard CachyOS defaults) ---
+    "net.ipv4.tcp_congestion_control" = "bbr";
+    "net.core.default_qdisc" = "fq";
+
+    # --- Allow unprivileged access to Intel GPU perf counters (MangoHud, Steam) ---
+    "dev.i915.perf_stream_paranoid" = 0;
   };
+
+  # BBR requires tcp_bbr module; FQ requires sch_fq module (both =m in CachyOS)
+  boot.kernelModules = [ "tcp_bbr" "sch_fq" ];
 
   boot.kernelParams = [
     # Prevent performance penalty from split-lock detection (games are frequent offenders)
