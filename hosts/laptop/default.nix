@@ -23,6 +23,10 @@
   # Enable flakes
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
 
+  # --- CachyOS kernel binary cache (avoids compiling from source) ---
+  nix.settings.substituters = [ "https://attic.xuyh0120.win/lantian" ];
+  nix.settings.trusted-public-keys = [ "lantian:EeAUQ+W+6r7EtwnmYjeVwx5kOGEBpjlBfPlzGlTNvHc=" ];
+
   # --- Laptop essentials ---
   services.printing.enable = true;
   services.fwupd.enable = true;
