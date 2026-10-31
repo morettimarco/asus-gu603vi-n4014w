@@ -24,8 +24,10 @@
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
 
   # --- CachyOS kernel binary cache (avoids compiling from source) ---
-  nix.settings.substituters = [ "https://attic.xuyh0120.win/lantian" ];
-  nix.settings.trusted-public-keys = [ "lantian:EeAUQ+W+6r7EtwnmYjeVwx5kOGEBpjlBfPlzGlTNvHc=" ];
+  # The previous endpoint and key were retired after a server compromise
+  # (xddxdd/nix-cachyos-kernel#110). Do not trust them again.
+  nix.settings.substituters = [ "https://cache.lantian.pub/lantian" ];
+  nix.settings.trusted-public-keys = [ "lantian:WVGO7vsRMSEN+h7Lp7kv6SAmrkEXgUGbbXm7jMDjBuQ=" ];
 
   # --- Laptop essentials ---
   services.printing.enable = true;

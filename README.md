@@ -2,6 +2,9 @@
 
 Gaming-optimized, modular NixOS flake configuration for the ASUS ROG Zephyrus G16, featuring LUKS encryption, CachyOS kernel, NVIDIA hybrid graphics, and a full gaming stack.
 
+> [!WARNING]
+> **If you installed this config before November 2026, pull and rebuild.** Earlier versions trust the CachyOS kernel binary cache at `attic.xuyh0120.win` and its signing key. Those servers were compromised and the key may have been stolen ([nix-cachyos-kernel#110](https://github.com/xddxdd/nix-cachyos-kernel/issues/110)). Nix accepts anything signed with a trusted key, so your machine keeps trusting the old key until you rebuild with the current config.
+
 ## Target Hardware
 
 | Component | Specification |
