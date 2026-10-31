@@ -62,6 +62,8 @@ Note: do NOT use `blkid | grep crypto_LUKS` — it may return nothing depending 
 
 Also run `nixos-generate-config --show-hardware-config` and add any missing kernel modules to `boot.initrd.availableKernelModules`.
 
+If you replaced the file with generated output, restore the SSD options, which the generator omits: `options = [ "noatime" ];` on `fileSystems."/"` and `allowDiscards = true;` on the `boot.initrd.luks.devices` entry.
+
 **Step 4b: Update username and personal details**
 
 The configuration files contain `CHANGEME` placeholders for the username. Replace them with the actual user's details:
@@ -87,14 +89,16 @@ cd /home/<username>/nixos-config
 nix build .#nixosConfigurations.zephyrus.config.system.build.toplevel --no-link
 ```
 
-The CachyOS kernel compiles from source (~15-30 min on first build).
+This test build runs as the user, who can't add a binary cache, so it can compile the CachyOS kernel from source (over 30 minutes) on a fresh install. To avoid that, add `--dry-run` here to check the config evaluates, and let Step 7 do the real build.
 
 **Step 7: Apply and reboot**
 
-Use `boot` (safer than `switch` — activates on reboot only):
+Use `boot` (safer than `switch` — activates on reboot only). The `--option` flags are needed only on this first apply, because the system doesn't trust the kernel binary cache until the config is active. Never use the old `attic.xuyh0120.win` cache or its key: they were compromised.
 
 ```bash
-sudo nixos-rebuild boot --flake .#zephyrus
+sudo nixos-rebuild boot --flake .#zephyrus \
+  --option extra-substituters https://cache.lantian.pub/lantian \
+  --option extra-trusted-public-keys lantian:WVGO7vsRMSEN+h7Lp7kv6SAmrkEXgUGbbXm7jMDjBuQ=
 sudo reboot
 ```
 
@@ -112,6 +116,8 @@ systemctl status auto-cpufreq thermald asusd supergfxd
 wpctl status | head -5                      # PipeWire active
 sensors                                     # Temperatures
 cat /proc/sys/vm/max_map_count              # 1048576
+systemctl is-active tlp auto-cpufreq        # tlp inactive, auto-cpufreq active
+boltctl list                                # runs without errors
 ```
 
 **Step 9: Set user password**
@@ -146,24 +152,35 @@ Migrating to a new drive:
 - **supergfxd conflicts with PRIME offload:** Remove `./modules/laptop/rog.nix` from `laptopModules` in `flake.nix`.
 - **Screen brightness not working:** Check `ls /sys/class/backlight/`. Kernel params in `modules/laptop/kernel-tweaks.nix` handle this.
 - **No audio:** Verify PipeWire: `systemctl --user status pipewire`. Check `wpctl status`.
-- **Build takes very long:** Normal for first build (CachyOS kernel compiles from source).
+- **First build compiles the kernel:** The binary cache isn't trusted until the config is applied. Use the `--option` flags from Step 7.
+
+## Rules for changing this config
+
+- Don't add `inputs.nixpkgs.follows` to `nix-cachyos-kernel`: the kernel would stop matching the binary cache.
+- Keep `services.tlp.enable = false`: the nixos-hardware profile enables TLP, which conflicts with auto-cpufreq.
+- Howdy (`modules/laptop/howdy.nix`) stays opt-in. Only enable it if the user asks.
+- Register every temporary fix in `workarounds.json` and tag each site with `# WORKAROUND(<id>)`, in the same commit. Removing a fix deletes both.
 
 ## Configuration Overview
 
 | Module | Purpose |
 |--------|---------|
 | `flake.nix` | Entry point, inputs (nixpkgs-unstable, home-manager, nixos-hardware, cachyos-kernel) |
-| `hosts/laptop/default.nix` | Bootloader (systemd-boot), CachyOS kernel, flakes, bluetooth, fwupd |
+| `hosts/laptop/default.nix` | Bootloader (systemd-boot), CachyOS kernel + binary cache, Plymouth, silent boot, flakes, weekly GC + daily optimise, fstrim, bluetooth, fwupd |
 | `hosts/laptop/hardware.nix` | Disk layout (LUKS+ext4 UUIDs), kernel modules, Intel microcode |
-| `modules/gaming.nix` | Steam, Gamescope, Gamemode, MangoHud, Lutris, Heroic, ProtonUp-Qt, Xbox controllers |
+| `modules/gaming.nix` | Steam, Gamescope, Gamemode, MangoHud, Lutris, Heroic, ProtonUp-Qt, Xbox controllers, uinput (Steam Input without the KDE portal prompt), ntsync |
 | `modules/laptop/nvidia.nix` | NVIDIA open drivers, PRIME offload (Intel primary, RTX on demand) |
-| `modules/laptop/power.nix` | zram (12GB, lz4), auto-cpufreq, thermald |
-| `modules/laptop/rog.nix` | asusd (fan/LED/battery), supergfxd (GPU switching) |
-| `modules/laptop/kernel-tweaks.nix` | Gaming sysctls, backlight params, split_lock_detect=off |
-| `modules/desktop.nix` | KDE Plasma 6 + SDDM |
+| `modules/laptop/power.nix` | zram (12GB, lz4), auto-cpufreq, thermald; power-profiles-daemon and TLP disabled |
+| `modules/laptop/rog.nix` | asusd (fan/LED/battery, asus-shutdown no-restart-on-switch workaround, keyboard LEDs re-sent after resume), supergfxd (GPU switching) |
+| `modules/laptop/thunderbolt.nix` | bolt daemon, boltctl CLI |
+| `modules/laptop/m4-aura.nix` | actkbd binding: M4 cycles keyboard LED modes |
+| `modules/laptop/howdy.nix` | Optional face login with the IR camera; not imported by default |
+| `modules/laptop/kernel-tweaks.nix` | Gaming sysctls, writeback limits, backlight params, split_lock_detect=off, silent boot |
+| `modules/desktop.nix` | KDE Plasma 6 + SDDM, KDE PIM disabled |
 | `modules/audio.nix` | PipeWire + ALSA 32-bit |
 | `modules/locale.nix` | Europe/Rome, en_US.UTF-8, Italian keyboard |
 | `modules/networking.nix` | NetworkManager |
 | `modules/packages.nix` | vim, wget, git, claude-code, firefox, pciutils, sensors, nvtop, htop |
-| `modules/users.nix` | User account (wheel, networkmanager, gamemode groups) |
+| `modules/users.nix` | User account (wheel, networkmanager, gamemode, uinput, input groups) |
 | `home/common.nix` | Home Manager: git, starship prompt, btop |
+| `workarounds.json` | Registry of temporary fixes, each with a `# WORKAROUND(<id>)` tag and a check for "fixed upstream" |

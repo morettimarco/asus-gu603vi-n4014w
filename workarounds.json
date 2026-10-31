@@ -1,0 +1,44 @@
+{
+  "_comment": "Registry of temporary workarounds in this flake. Every entry has a matching `WORKAROUND(<id>)` tag at each site listed in `files`. Check contract: `command` exits 0 = fixed, 1 = still needed, anything else = check error. Run a check from the repo root with NIXPKGS=\"path:$(nix eval --raw .#nixosConfigurations.zephyrus.pkgs.path)\" NIXPKGS_SRC=\"$(nix eval --raw .#nixosConfigurations.zephyrus.pkgs.path)\" REPO=\"$PWD\" bash -c '<command>'. A good moment to run them is after a flake update. When one reports fixed, follow its `remove` text.",
+  "workarounds": [
+    {
+      "id": "asus-shutdown-no-restart",
+      "title": "asus-shutdown.service is not restarted/stopped on switch",
+      "files": ["modules/laptop/rog.nix"],
+      "since": "2026-05-31",
+      "reason": "asusctl ships asus-shutdown.service with SendSIGKILL=no and the daemon defers SIGTERM until real shutdown, so nixos-rebuild's restart-on-switch times out and the switch exits non-zero.",
+      "upstream": "https://gitlab.com/asus-linux/asusctl",
+      "check": {
+        "type": "command",
+        "command": "unit=\"$(nix build --no-link --print-out-paths \"$NIXPKGS#asusctl\")/lib/systemd/system/asus-shutdown.service\" || exit 2; if ! grep -q '^SendSIGKILL=no' \"$unit\"; then exit 0; fi; grep -q 'restartIfChanged' \"$NIXPKGS_SRC/nixos/modules/services/hardware/asusd.nix\" && exit 0; exit 1"
+      },
+      "remove": "Delete the systemd.services.asus-shutdown block from modules/laptop/rog.nix and its README known-issues entry, then dry-build. Test with `sudo nixos-rebuild test --flake .#zephyrus` twice in a row: the second activation must not fail on asus-shutdown."
+    },
+    {
+      "id": "asusd-aura-no-resume",
+      "title": "Keyboard LED mode and brightness re-sent to asusd after resume",
+      "files": ["modules/laptop/rog.nix"],
+      "since": "2026-10-31",
+      "reason": "asusd's AuraZbus::start_tasks has its create_tasks call commented out, so the handler that restores keyboard LEDs on wake never runs and the keyboard can stay dark after suspend.",
+      "upstream": "https://gitlab.com/asus-linux/asusctl",
+      "check": {
+        "type": "command",
+        "command": "s=\"$(nix build --no-link --print-out-paths \"$NIXPKGS#asusctl.src\")\" || exit 2; f=\"$s/asusd/src/aura_laptop/trait_impls.rs\"; test -f \"$f\" || exit 2; grep -q '// task.create_tasks(signal_ctx).await' \"$f\" && exit 1; exit 0"
+      },
+      "remove": "Delete auraReapply and powerManagement.resumeCommands from modules/laptop/rog.nix and the README known-issues entry. Test several suspend/resume cycles: `journalctl -u asusd | grep CtrlKbdLedTask` must show asusd's own restore running and the keyboard must stay lit."
+    },
+    {
+      "id": "polkit-helper-howdy-camera",
+      "title": "polkit-agent-helper@ sandbox opened to the IR camera for howdy",
+      "files": ["modules/laptop/howdy.nix"],
+      "since": "2026-10-26",
+      "reason": "polkit 127 runs its PAM helper as a sandboxed unit (PrivateDevices=yes, DevicePolicy=strict), so pam_howdy cannot open the IR camera. Polkit prompts then fail instantly, password fallback included. nixpkgs relaxes the sandbox for u2f/yubico/fprintd/zfs, not howdy.",
+      "upstream": "https://github.com/NixOS/nixpkgs/blob/nixos-unstable/nixos/modules/security/polkit.nix",
+      "check": {
+        "type": "command",
+        "command": "grep -q howdy \"$NIXPKGS_SRC/nixos/modules/security/polkit.nix\" && exit 0; exit 1"
+      },
+      "remove": "Delete the systemd.services.\"polkit-agent-helper@\" block from modules/laptop/howdy.nix. Test with Howdy enabled by opening any app that asks for admin rights through polkit: face or password must be accepted."
+    }
+  ]
+}
