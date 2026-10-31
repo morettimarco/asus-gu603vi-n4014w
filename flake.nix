@@ -54,6 +54,8 @@
       ./modules/laptop/power.nix
       ./modules/laptop/rog.nix
       ./modules/laptop/thunderbolt.nix
+      ./modules/laptop/m4-aura.nix
+      # ./modules/laptop/howdy.nix   # optional face login; see README
       ./modules/laptop/kernel-tweaks.nix
     ];
   in

@@ -21,6 +21,9 @@
     "vm.dirty_bytes" = 268435456;
     "vm.dirty_background_bytes" = 67108864;
 
+    # --- Suppress kernel console messages (complements silent boot) ---
+    "kernel.printk" = "3 3 3 3";
+
     # --- Allow unprivileged access to Intel GPU perf counters (MangoHud, Steam) ---
     "dev.i915.perf_stream_paranoid" = 0;
 
@@ -33,6 +36,10 @@
   boot.kernelModules = [ "tcp_bbr" "sch_fq" ];
 
   boot.kernelParams = [
+    # Silent boot (complements boot.consoleLogLevel)
+    "quiet"
+    "udev.log_level=3"
+
     # Prevent performance penalty from split-lock detection (games are frequent offenders)
     "split_lock_detect=off"
 
