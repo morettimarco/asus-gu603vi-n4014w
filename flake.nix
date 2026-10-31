@@ -11,7 +11,12 @@
 
     nixos-hardware.url = "github:NixOS/nixos-hardware";
 
-    # Use release branch for binary cache availability
+    # Use release branch for binary cache availability.
+    # IMPORTANT: do NOT add inputs.nixpkgs.follows here. The binary cache only
+    # ships kernels built against this flake's own pinned nixpkgs; following
+    # our nixpkgs changes the derivation hash and forces a local kernel build
+    # on every update.
+    # See: https://github.com/xddxdd/nix-cachyos-kernel
     nix-cachyos-kernel.url = "github:xddxdd/nix-cachyos-kernel/release";
   };
 
@@ -48,6 +53,7 @@
       ./modules/laptop/nvidia.nix
       ./modules/laptop/power.nix
       ./modules/laptop/rog.nix
+      ./modules/laptop/thunderbolt.nix
       ./modules/laptop/kernel-tweaks.nix
     ];
   in

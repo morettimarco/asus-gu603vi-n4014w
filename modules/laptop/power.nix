@@ -28,6 +28,11 @@
   # --- Disable power-profiles-daemon (conflicts with auto-cpufreq) ---
   services.power-profiles-daemon.enable = false;
 
+  # --- Disable TLP (also conflicts with auto-cpufreq) ---
+  # nixos-hardware's common/pc/laptop profile turns TLP on whenever
+  # power-profiles-daemon is off, so it has to be switched off explicitly.
+  services.tlp.enable = false;
+
   # --- Intel thermal management ---
   services.thermald.enable = true;
 }

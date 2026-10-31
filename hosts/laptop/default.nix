@@ -29,6 +29,9 @@
   nix.settings.substituters = [ "https://cache.lantian.pub/lantian" ];
   nix.settings.trusted-public-keys = [ "lantian:WVGO7vsRMSEN+h7Lp7kv6SAmrkEXgUGbbXm7jMDjBuQ=" ];
 
+  # --- SSD optimization (periodic TRIM) ---
+  services.fstrim.enable = true;
+
   # --- Laptop essentials ---
   services.printing.enable = true;
   services.fwupd.enable = true;

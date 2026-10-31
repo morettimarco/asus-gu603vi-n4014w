@@ -24,12 +24,14 @@
   # --- LUKS encryption ---
   boot.initrd.luks.devices."luks-CHANGEME-LUKS-UUID" = {
     device = "/dev/disk/by-uuid/CHANGEME-LUKS-UUID";
+    allowDiscards = true;  # lets TRIM reach the SSD through LUKS
   };
 
   # --- Root filesystem (ext4 on LUKS) ---
   fileSystems."/" = {
     device = "/dev/mapper/luks-CHANGEME-LUKS-UUID";
     fsType = "ext4";
+    options = [ "noatime" ];
   };
 
   # --- Boot partition ---
