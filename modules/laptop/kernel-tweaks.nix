@@ -15,8 +15,18 @@
     "net.ipv4.tcp_congestion_control" = "bbr";
     "net.core.default_qdisc" = "fq";
 
+    # --- Dirty page writeback: absolute byte limits for 48GB RAM ---
+    # Ratio-based defaults allow ~9.6GB dirty pages before forced writeback.
+    # Byte limits (256MB trigger / 64MB background) prevent I/O stalls during gaming.
+    "vm.dirty_bytes" = 268435456;
+    "vm.dirty_background_bytes" = 67108864;
+
     # --- Allow unprivileged access to Intel GPU perf counters (MangoHud, Steam) ---
     "dev.i915.perf_stream_paranoid" = 0;
+
+    # Finer CFS scheduler granularity (3 ms slice vs default 5 ms) — improves
+    # frame pacing when games and background tasks contend for CPU. From SteamOS.
+    "kernel.sched_cfs_bandwidth_slice_us" = 3000;
   };
 
   # BBR requires tcp_bbr module; FQ requires sch_fq module (both =m in CachyOS)

@@ -6,7 +6,7 @@
   users.users.CHANGEME_USERNAME = {
     isNormalUser = true;
     description = "CHANGEME_DESCRIPTION";
-    extraGroups = [ "networkmanager" "wheel" "gamemode" ];
+    extraGroups = [ "networkmanager" "wheel" "gamemode" "uinput" "input" ];
     packages = with pkgs; [
       kdePackages.kate
     ];
