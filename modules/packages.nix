@@ -19,6 +19,9 @@
     htop              # process monitoring
     neovim
 
+    # CLI tools
+    wl-clipboard      # wl-copy/wl-paste (Claude Code reads pasted images with these)
+
     # Development
     gh                # GitHub CLI
   ];

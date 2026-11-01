@@ -180,7 +180,7 @@ Migrating to a new drive:
 | `modules/audio.nix` | PipeWire + ALSA 32-bit |
 | `modules/locale.nix` | Europe/Rome, en_US.UTF-8, Italian keyboard |
 | `modules/networking.nix` | NetworkManager |
-| `modules/packages.nix` | vim, wget, git, claude-code, firefox, pciutils, sensors, nvtop, htop |
+| `modules/packages.nix` | vim, wget, git, claude-code, wl-clipboard, firefox, pciutils, sensors, nvtop, htop |
 | `modules/users.nix` | User account (wheel, networkmanager, gamemode, uinput, input groups) |
 | `home/common.nix` | Home Manager: git, starship prompt, btop |
 | `workarounds.json` | Registry of temporary fixes, each with a `# WORKAROUND(<id>)` tag and a check for "fixed upstream" |

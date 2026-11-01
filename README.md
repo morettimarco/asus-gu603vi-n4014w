@@ -337,6 +337,7 @@ sudo nixos-rebuild switch --rollback
 | **First build compiles the kernel** | The binary cache isn't trusted until this config is applied. Use the `--option` flags in [Step 6](#step-6-build-and-apply). Later rebuilds fetch it |
 | **Steam still opens a "Remote Control" prompt** | Log out and back in so the new `uinput` and `input` groups apply, then check with `id` |
 | **Keyboard dark after sleep** | Check `journalctl -u sleep-actions -b \| grep aura-reapply`. Brightness 0 is left alone on purpose: KDE dims the keyboard while idle and should restore it on input. If it doesn't, raise it with the Fn keys, or see the PowerDevil entry under [Known Issues](#known-issues) |
+| **Claude Code says "no image found in clipboard"** | It reads the Wayland clipboard through `wl-paste`, from `wl-clipboard` in `modules/packages.nix`. Check with `wl-paste --list-types` |
 
 ## Known Issues
 
