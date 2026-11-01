@@ -38,6 +38,19 @@
       "remove": "After a BIOS update, read the firmware's table first: `sudo cat /sys/firmware/acpi/tables/DSDT > dsdt.dat`, then `nix shell nixpkgs#acpica-tools -c iasl -d dsdt.dat`, and check whether Device (LID0) under \\_SB.PC00.LPCB now has a _PRW. If it does, delete acpiLidWake and boot.initrd.prepend from modules/laptop/rog.nix and the README known-issues entry. Apply with `sudo nixos-rebuild boot --flake .#zephyrus`, reboot, and test lid and power button wake."
     },
     {
+      "id": "powerdevil-dimdisplay-display-gap",
+      "title": "Optional PowerDevil patch (commented out) so DimDisplay survives the display gap on resume",
+      "files": ["modules/desktop.nix"],
+      "since": "2026-10-31",
+      "reason": "Displays vanish briefly on resume, so Core::refreshActions() destroys DimDisplay as unsupported, along with the keyboard brightness it saved before suspend. The keyboard then stays at 0 even after input. Side effect of this patch: a machine with a keyboard backlight but no screen brightness control would dim its keyboard on idle, which does not affect this laptop.",
+      "upstream": "https://bugs.kde.org/show_bug.cgi?id=523402",
+      "check": {
+        "type": "command",
+        "command": "s=\"$(nix build --no-link --print-out-paths \"$NIXPKGS#kdePackages.powerdevil.src\")\" || exit 2; c=\"$(tar -xJOf \"$s\" --wildcards '*/daemon/actions/bundled/dimdisplay.cpp' 2>/dev/null)\"; test -n \"$c\" || exit 2; grep -qF 'return core()->screenBrightnessController()->isSupported();' <<<\"$c\" && exit 1; exit 0"
+      },
+      "remove": "The patch ships commented out; the comment in modules/desktop.nix explains how to enable it. A check reporting fixed only means that line changed upstream, so read the new code first. To remove it, delete the commented block and systemPackages line from modules/desktop.nix and the README known-issues entry."
+    },
+    {
       "id": "polkit-helper-howdy-camera",
       "title": "polkit-agent-helper@ sandbox opened to the IR camera for howdy",
       "files": ["modules/laptop/howdy.nix"],

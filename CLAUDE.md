@@ -176,7 +176,7 @@ Migrating to a new drive:
 | `modules/laptop/m4-aura.nix` | actkbd binding: M4 cycles keyboard LED modes |
 | `modules/laptop/howdy.nix` | Optional face login with the IR camera; not imported by default |
 | `modules/laptop/kernel-tweaks.nix` | Gaming sysctls, writeback limits, backlight params, split_lock_detect=off, silent boot |
-| `modules/desktop.nix` | KDE Plasma 6 + SDDM, KDE PIM disabled |
+| `modules/desktop.nix` | KDE Plasma 6 + SDDM, KDE PIM disabled, optional PowerDevil patch for the dark keyboard (commented out) |
 | `modules/audio.nix` | PipeWire + ALSA 32-bit |
 | `modules/locale.nix` | Europe/Rome, en_US.UTF-8, Italian keyboard |
 | `modules/networking.nix` | NetworkManager |

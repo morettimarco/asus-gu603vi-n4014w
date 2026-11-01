@@ -232,7 +232,7 @@ hosts/
     hardware.nix                       # Disk layout — EDIT with your UUIDs
 modules/
   locale.nix                           # Timezone (Europe/Rome), i18n, Italian keyboard
-  desktop.nix                          # KDE Plasma 6 + SDDM
+  desktop.nix                          # KDE Plasma 6 + SDDM, optional PowerDevil patch
   audio.nix                            # PipeWire + ALSA 32-bit
   networking.nix                       # NetworkManager
   packages.nix                         # System packages (vim, git, firefox, htop, etc.)
@@ -336,7 +336,7 @@ sudo nixos-rebuild switch --rollback
 | **Screen brightness broken** | Check `ls /sys/class/backlight/` — the config uses `i915.enable_dpcd_backlight=1` |
 | **First build compiles the kernel** | The binary cache isn't trusted until this config is applied. Use the `--option` flags in [Step 6](#step-6-build-and-apply). Later rebuilds fetch it |
 | **Steam still opens a "Remote Control" prompt** | Log out and back in so the new `uinput` and `input` groups apply, then check with `id` |
-| **Keyboard dark after sleep** | Check `journalctl -u sleep-actions -b \| grep aura-reapply`. Brightness 0 is left alone on purpose: KDE dims the keyboard while idle and restores it on input |
+| **Keyboard dark after sleep** | Check `journalctl -u sleep-actions -b \| grep aura-reapply`. Brightness 0 is left alone on purpose: KDE dims the keyboard while idle and should restore it on input. If it doesn't, raise it with the Fn keys, or see the PowerDevil entry under [Known Issues](#known-issues) |
 
 ## Known Issues
 
@@ -344,6 +344,7 @@ These are upstream problems this config works around. Each has an entry in `work
 
 - **`asus-shutdown` and rebuilds.** The service refuses to stop until real shutdown, which would make `nixos-rebuild switch` fail, so rebuilds leave it running. If you see a stuck instance from an older config, kill its PID with `sudo kill -9 <pid>`, then run `sudo systemctl reset-failed asus-shutdown.service` and `sudo systemctl start asus-shutdown.service`.
 - **Keyboard LEDs after sleep.** asusd doesn't restore them on wake, so `modules/laptop/rog.nix` re-sends the LED mode and brightness.
+- **Keyboard stays dark after an idle suspend.** A PowerDevil bug can lose the saved keyboard brightness on wake ([KDE bug 523402](https://bugs.kde.org/show_bug.cgi?id=523402)). `modules/desktop.nix` has a tested patch, commented out by default; the comment there explains how to enable it.
 - **Lid and power button wake.** The firmware doesn't mark the lid's event line as a wake source, so on Linux only the keyboard or other USB input could wake the laptop from sleep. `modules/laptop/rog.nix` adds the missing definition as a small ACPI table in early boot, without changing the firmware. Tested on BIOS GU603VI.317; check with `grep LID0 /proc/acpi/wakeup`, which should show it enabled. Side effect: unplugging the charger also wakes the laptop. Don't switch to `deep` sleep instead: on that BIOS it didn't resume at all.
 - **Howdy and polkit.** polkit's sandbox blocks the IR camera, which also breaks password fallback in admin prompts. `modules/laptop/howdy.nix` opens the sandbox to the camera.
 

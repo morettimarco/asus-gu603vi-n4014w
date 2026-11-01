@@ -21,6 +21,8 @@ let
       fi
       busctl --system set-property xyz.ljones.Asusd "$aura" xyz.ljones.Aura LedMode u "$mode"
       busctl --system set-property xyz.ljones.Asusd "$aura" xyz.ljones.Aura Brightness u "$brightness"
+      # UPower caches brightness and PowerDevil reads that cache, so tell it too.
+      busctl --system call org.freedesktop.UPower /org/freedesktop/UPower/KbdBacklight org.freedesktop.UPower.KbdBacklight SetBrightness i "$brightness"
       echo "aura-reapply: re-sent mode $mode at brightness $brightness"
     '';
   };
