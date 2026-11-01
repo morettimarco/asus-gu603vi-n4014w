@@ -241,7 +241,7 @@ modules/
   laptop/
     nvidia.nix                         # RTX 4070 open drivers + PRIME offload
     power.nix                          # zram, auto-cpufreq, thermald; TLP off
-    rog.nix                            # asusd, supergfxctl, keyboard LEDs after resume
+    rog.nix                            # asusd, supergfxctl, keyboard LEDs after resume, lid/power wake
     thunderbolt.nix                    # bolt daemon, boltctl
     m4-aura.nix                        # M4 key cycles keyboard LED modes
     howdy.nix                          # Optional face login (not imported by default)
@@ -344,6 +344,7 @@ These are upstream problems this config works around. Each has an entry in `work
 
 - **`asus-shutdown` and rebuilds.** The service refuses to stop until real shutdown, which would make `nixos-rebuild switch` fail, so rebuilds leave it running. If you see a stuck instance from an older config, kill its PID with `sudo kill -9 <pid>`, then run `sudo systemctl reset-failed asus-shutdown.service` and `sudo systemctl start asus-shutdown.service`.
 - **Keyboard LEDs after sleep.** asusd doesn't restore them on wake, so `modules/laptop/rog.nix` re-sends the LED mode and brightness.
+- **Lid and power button wake.** The firmware doesn't mark the lid's event line as a wake source, so on Linux only the keyboard or other USB input could wake the laptop from sleep. `modules/laptop/rog.nix` adds the missing definition as a small ACPI table in early boot, without changing the firmware. Tested on BIOS GU603VI.317; check with `grep LID0 /proc/acpi/wakeup`, which should show it enabled. Side effect: unplugging the charger also wakes the laptop. Don't switch to `deep` sleep instead: on that BIOS it didn't resume at all.
 - **Howdy and polkit.** polkit's sandbox blocks the IR camera, which also breaks password fallback in admin prompts. `modules/laptop/howdy.nix` opens the sandbox to the camera.
 
 Things to watch for when changing this config:

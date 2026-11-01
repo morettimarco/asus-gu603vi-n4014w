@@ -24,8 +24,36 @@ let
       echo "aura-reapply: re-sent mode $mode at brightness $brightness"
     '';
   };
+
+  # WORKAROUND(asus-lid-wake-prw): see workarounds.json.
+  # The firmware routes lid and power button events through GPE 0x02 but gives
+  # LID0 no _PRW, so Linux leaves that GPE unarmed in s2idle and only USB input
+  # can wake the laptop. Add the missing _PRW with an ACPI table in early boot.
+  # The cpio must stay uncompressed for the kernel to find the table in it.
+  acpiLidWake = pkgs.runCommand "acpi-lid-wake.cpio"
+    { nativeBuildInputs = with pkgs; [ acpica-tools cpio ]; }
+    ''
+      cat > lidwake.asl <<'EOF'
+      DefinitionBlock ("", "SSDT", 2, "FIXUP", "LIDWAKE", 0x00000001)
+      {
+          External (\_SB.PC00.LPCB.LID0, DeviceObj)
+
+          Scope (\_SB.PC00.LPCB.LID0)
+          {
+              Name (_PRW, Package (0x02) { 0x02, Zero })
+          }
+      }
+      EOF
+      iasl lidwake.asl
+      mkdir -p kernel/firmware/acpi
+      cp lidwake.aml kernel/firmware/acpi/
+      find kernel | LC_ALL=C sort | cpio -o -H newc --reproducible > "$out"
+    '';
 in
 {
+  # WORKAROUND(asus-lid-wake-prw): see acpiLidWake above.
+  boot.initrd.prepend = [ "${acpiLidWake}" ];
+
   # --- ASUS ROG daemon (fan profiles, keyboard LEDs, charge limit) ---
   services.asusd.enable = true;
 

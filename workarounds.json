@@ -28,6 +28,16 @@
       "remove": "Delete auraReapply and powerManagement.resumeCommands from modules/laptop/rog.nix and the README known-issues entry. Test several suspend/resume cycles: `journalctl -u asusd | grep CtrlKbdLedTask` must show asusd's own restore running and the keyboard must stay lit."
     },
     {
+      "id": "asus-lid-wake-prw",
+      "title": "ACPI table adds the missing _PRW on LID0 so lid and power button wake s2idle",
+      "files": ["modules/laptop/rog.nix"],
+      "since": "2026-10-31",
+      "reason": "On BIOS GU603VI.317 lid and power button events reach the OS through GPE 0x02 (_L02 -> ECLV -> LEVN -> LGPA), but \\_SB.PC00.LPCB.LID0 has no _PRW and nothing else claims that GPE for wake. Linux leaves it unarmed in s2idle, so only USB input such as the internal keyboard can wake the laptop. Other events share that path, so unplugging the charger now wakes the laptop too.",
+      "upstream": "https://discuss.cachyos.org/t/asus-tuf-gaming-f15-fx507zi4-s2idle-wake-sources-fixed-by-dsdt-override/35463",
+      "check": { "type": "manual", "review_every_days": 180 },
+      "remove": "After a BIOS update, read the firmware's table first: `sudo cat /sys/firmware/acpi/tables/DSDT > dsdt.dat`, then `nix shell nixpkgs#acpica-tools -c iasl -d dsdt.dat`, and check whether Device (LID0) under \\_SB.PC00.LPCB now has a _PRW. If it does, delete acpiLidWake and boot.initrd.prepend from modules/laptop/rog.nix and the README known-issues entry. Apply with `sudo nixos-rebuild boot --flake .#zephyrus`, reboot, and test lid and power button wake."
+    },
+    {
       "id": "polkit-helper-howdy-camera",
       "title": "polkit-agent-helper@ sandbox opened to the IR camera for howdy",
       "files": ["modules/laptop/howdy.nix"],

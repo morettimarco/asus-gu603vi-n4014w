@@ -171,7 +171,7 @@ Migrating to a new drive:
 | `modules/gaming.nix` | Steam, Gamescope, Gamemode, MangoHud, Lutris, Heroic, ProtonUp-Qt, Xbox controllers, uinput (Steam Input without the KDE portal prompt), ntsync |
 | `modules/laptop/nvidia.nix` | NVIDIA open drivers, PRIME offload (Intel primary, RTX on demand) |
 | `modules/laptop/power.nix` | zram (12GB, lz4), auto-cpufreq, thermald; power-profiles-daemon and TLP disabled |
-| `modules/laptop/rog.nix` | asusd (fan/LED/battery, asus-shutdown no-restart-on-switch workaround, keyboard LEDs re-sent after resume), supergfxd (GPU switching) |
+| `modules/laptop/rog.nix` | asusd (fan/LED/battery, asus-shutdown no-restart-on-switch workaround, keyboard LEDs re-sent after resume), supergfxd (GPU switching), ACPI table so lid and power button wake s2idle |
 | `modules/laptop/thunderbolt.nix` | bolt daemon, boltctl CLI |
 | `modules/laptop/m4-aura.nix` | actkbd binding: M4 cycles keyboard LED modes |
 | `modules/laptop/howdy.nix` | Optional face login with the IR camera; not imported by default |
